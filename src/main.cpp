@@ -4,8 +4,12 @@ volatile uint16_t timerval = 0;
 volatile uint16_t degrees = 0;
 volatile bool im_global = false;
 
+const uint8_t high_time = 10;
+
 const uint16_t camera_position[6] = {0, 90, 180, 0xFF, 0xFF, 0xFF};
 const uint16_t camera_pin[6] = {PINF0, PINF1, PINF4, PINF5, PINF6, PINF7};
+
+void update_outputs();
 
 void setup()
 {
@@ -48,12 +52,16 @@ ISR(TIMER1_CAPT_vect)
   TCNT1 = 0;
   TCNT3 = 0;
   degrees = 0;
-  PORTF = ((camera_position[0] == degrees) << camera_pin[0]) | ((camera_position[1] == degrees) << camera_pin[1]) | ((camera_position[2] == degrees) << camera_pin[2]) | ((camera_position[3] == degrees) << camera_pin[3]) | ((camera_position[4] == degrees) << camera_pin[4]) | ((camera_position[5] == degrees) << camera_pin[5]);
+  update_outputs();
   OCR3A = (uint32_t)ICR1 * 256 / 3600;
 }
 
 ISR(TIMER3_COMPA_vect)
 {
   degrees < 359 ? degrees++ : degrees = 0;
-  PORTF = ((camera_position[0] == degrees) << camera_pin[0]) | ((camera_position[1] == degrees) << camera_pin[1]) | ((camera_position[2] == degrees) << camera_pin[2]) | ((camera_position[3] == degrees) << camera_pin[3]) | ((camera_position[4] == degrees) << camera_pin[4]) | ((camera_position[5] == degrees) << camera_pin[5]);
+  update_outputs();
+}
+
+void update_outputs() {
+  PORTF = ((degrees >= camera_position[0] && degrees < camera_position[0] + high_time) << camera_pin[0]) | ((degrees >= camera_position[1] && degrees < camera_position[1] + high_time) << camera_pin[1]) | ((degrees >= camera_position[2] &&  degrees < camera_position[2] + high_time) << camera_pin[2]) | ((degrees >= camera_position[3] && degrees < camera_position[3] + high_time) << camera_pin[3]) | ((degrees >= camera_position[4] && degrees < camera_position[4] + high_time) << camera_pin[4]) | ((degrees >= camera_position[5] &&  degrees < camera_position[5] + high_time) << camera_pin[5]);
 }
