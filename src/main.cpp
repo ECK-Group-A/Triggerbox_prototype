@@ -4,8 +4,13 @@ volatile uint16_t timerval = 0;
 volatile uint16_t degrees = 0;
 volatile bool im_global = false;
 
+const uint16_t camera_position[6] = {0, 90, 180, 0xFF, 0xFF, 0xFF};
+const uint16_t camera_pin[6] = {PINF0, PINF1, PINF4, PINF5, PINF6, PINF7};
+
 void setup()
 {
+  DDRF = (1 << camera_pin[0]) | (1 << camera_pin[1]) | (1 << camera_pin[2]) | (1 << camera_pin[3]) | (1 << camera_pin[4]) | (1 << camera_pin[5]);
+
   cli(); // Disable global interrupts
 
   /////////////
@@ -36,30 +41,19 @@ void setup()
 
 void loop()
 {
-  // put your main code here, to run repeatedly:
-  if (im_global == true)
-  {
-    Serial.println("Hi");
-    im_global = false;
-  }
 }
 
 ISR(TIMER1_CAPT_vect)
 {
   TCNT1 = 0;
-  OCR3A = (uint32_t)ICR1 * 256 / 3600;
   TCNT3 = 0;
+  degrees = 0;
+  PORTF = ((camera_position[0] == degrees) << camera_pin[0]) | ((camera_position[1] == degrees) << camera_pin[1]) | ((camera_position[2] == degrees) << camera_pin[2]) | ((camera_position[3] == degrees) << camera_pin[3]) | ((camera_position[4] == degrees) << camera_pin[4]) | ((camera_position[5] == degrees) << camera_pin[5]);
+  OCR3A = (uint32_t)ICR1 * 256 / 3600;
 }
 
 ISR(TIMER3_COMPA_vect)
 {
-  if (degrees < 359)
-  {
-    degrees++;
-  }
-  else
-  {
-    degrees = 0;
-    im_global = true;
-  }
+  degrees < 359 ? degrees++ : degrees = 0;
+  PORTF = ((camera_position[0] == degrees) << camera_pin[0]) | ((camera_position[1] == degrees) << camera_pin[1]) | ((camera_position[2] == degrees) << camera_pin[2]) | ((camera_position[3] == degrees) << camera_pin[3]) | ((camera_position[4] == degrees) << camera_pin[4]) | ((camera_position[5] == degrees) << camera_pin[5]);
 }
