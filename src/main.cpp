@@ -63,5 +63,5 @@ ISR(TIMER3_COMPA_vect)
 }
 
 void update_outputs() {
-  PORTF = ((degrees >= camera_position[0] && degrees < camera_position[0] + high_time) << camera_pin[0]) | ((degrees >= camera_position[1] && degrees < camera_position[1] + high_time) << camera_pin[1]) | ((degrees >= camera_position[2] &&  degrees < camera_position[2] + high_time) << camera_pin[2]) | ((degrees >= camera_position[3] && degrees < camera_position[3] + high_time) << camera_pin[3]) | ((degrees >= camera_position[4] && degrees < camera_position[4] + high_time) << camera_pin[4]) | ((degrees >= camera_position[5] &&  degrees < camera_position[5] + high_time) << camera_pin[5]);
+  PORTF = ((degrees >= camera_position[0] && degrees < camera_position[0] + high_time) << camera_pin[0]) | ((degrees >= camera_position[1] && degrees < camera_position[1] + high_time) << camera_pin[1]) | ((degrees >= camera_position[2] &&  degrees < camera_position[2] + high_time) << camera_pin[2]) | ((degrees >= camera_position[3] && degrees < camera_position[3] + high_time) << camera_pin[3]) | ((degrees >= camera_position[4] && degrees < camera_position[4] + high_time) << camera_pin[4]) | ((degrees >= camera_position[5] && degrees < camera_position[5] + high_time) << camera_pin[5]);
 }
