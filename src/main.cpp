@@ -1,12 +1,14 @@
 #include <Arduino.h>
 
 volatile uint16_t timerval = 0;
+volatile uint16_t degree = 0;
 volatile uint16_t degrees = 0;
+volatile uint16_t pad_decimal = 0;
 volatile bool im_global = false;
 
 const uint8_t high_time = 10;
 
-const uint16_t camera_position[6] = {0, 90, 180, 0xFF, 0xFF, 0xFF};
+const uint16_t camera_position[6] = {0, 120, 240, 0xFF, 0xFF, 0xFF};
 const uint16_t camera_pin[6] = {PINF0, PINF1, PINF4, PINF5, PINF6, PINF7};
 
 void update_outputs();
@@ -51,17 +53,22 @@ ISR(TIMER1_CAPT_vect)
 {
   TCNT1 = 0;
   TCNT3 = 0;
-  degrees = 0;
   update_outputs();
-  OCR3A = (uint32_t)ICR1 * 256 / 3600;
+  degrees = 0;
+  degree = (uint32_t)ICR1 * 256 / 3600;
+  pad_decimal = 3600 / (((uint32_t)ICR1 * 256) % 3600);
+  OCR3A = degree;
 }
 
 ISR(TIMER3_COMPA_vect)
 {
-  degrees < 359 ? degrees++ : degrees = 0;
+  ++degrees % pad_decimal ? OCR3A = degree : OCR3A = degree+1;
   update_outputs();
 }
 
 void update_outputs() {
-  PORTF = ((degrees >= camera_position[0] && degrees < camera_position[0] + high_time) << camera_pin[0]) | ((degrees >= camera_position[1] && degrees < camera_position[1] + high_time) << camera_pin[1]) | ((degrees >= camera_position[2] &&  degrees < camera_position[2] + high_time) << camera_pin[2]) | ((degrees >= camera_position[3] && degrees < camera_position[3] + high_time) << camera_pin[3]) | ((degrees >= camera_position[4] && degrees < camera_position[4] + high_time) << camera_pin[4]) | ((degrees >= camera_position[5] && degrees < camera_position[5] + high_time) << camera_pin[5]);
+  if (degrees < 3600) {
+    uint16_t angle = degrees % 360;
+    PORTF = ((angle >= camera_position[0] && angle < camera_position[0] + high_time) << camera_pin[0]) | ((angle >= camera_position[1] && angle < camera_position[1] + high_time) << camera_pin[1]) | ((angle >= camera_position[2] && angle < camera_position[2] + high_time) << camera_pin[2]) | ((angle >= camera_position[3] && angle < camera_position[3] + high_time) << camera_pin[3]) | ((angle >= camera_position[4] && angle < camera_position[4] + high_time) << camera_pin[4]) | ((angle >= camera_position[5] && angle < camera_position[5] + high_time) << camera_pin[5]);
+  }
 }
