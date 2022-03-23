@@ -1,6 +1,7 @@
 #include <Arduino.h>
 
 volatile uint16_t timerval = 0;
+volatile uint16_t angle = 0;
 volatile uint16_t degree = 0;
 volatile uint16_t degrees = 0;
 volatile uint16_t pad_decimal = 0;
@@ -53,8 +54,9 @@ ISR(TIMER1_CAPT_vect)
 {
   TCNT1 = 0;
   TCNT3 = 0;
-  update_outputs();
+  angle = 0;
   degrees = 0;
+  update_outputs();
   degree = (uint32_t)ICR1 * 256 / 3600;
   pad_decimal = 3600 / (((uint32_t)ICR1 * 256) % 3600);
   OCR3A = degree;
@@ -63,12 +65,12 @@ ISR(TIMER1_CAPT_vect)
 ISR(TIMER3_COMPA_vect)
 {
   ++degrees % pad_decimal ? OCR3A = degree : OCR3A = degree+1;
+  angle < 359 ? angle++ : angle = 0;
   update_outputs();
 }
 
 void update_outputs() {
   if (degrees < 3600) {
-    uint16_t angle = degrees % 360;
     PORTF = ((angle >= camera_position[0] && angle < camera_position[0] + high_time) << camera_pin[0]) | ((angle >= camera_position[1] && angle < camera_position[1] + high_time) << camera_pin[1]) | ((angle >= camera_position[2] && angle < camera_position[2] + high_time) << camera_pin[2]) | ((angle >= camera_position[3] && angle < camera_position[3] + high_time) << camera_pin[3]) | ((angle >= camera_position[4] && angle < camera_position[4] + high_time) << camera_pin[4]) | ((angle >= camera_position[5] && angle < camera_position[5] + high_time) << camera_pin[5]);
   }
 }
