@@ -1,5 +1,6 @@
 #include <Arduino.h>
 
+volatile uint16_t timer1_msb = 0;
 volatile uint16_t timerval = 0;
 volatile uint16_t degree = 0;
 volatile uint16_t degrees = 0;
@@ -25,9 +26,9 @@ void setup()
 
   DDRD &= ~(1 << 4);      // Set PD4 input
   TCCR1A = 0x00;          // Timer/counter 1 normal mode
-  TCCR1B = (1 << CS12);   // Timer/counter 1 clock prescaler = 256
+  TCCR1B = (1 << CS10);   // Timer/counter 1 clock prescaler = 1
   TCCR1B |= (1 << ICES1); // Timer/counter 1 Input Capture on Rising Edge
-  TIMSK1 |= (1 << ICIE1); // Timer/counter 1  interrupt when input capture event occurs
+  TIMSK1 |= (1 << ICIE1) | (1 << TOIE1); // Timer/counter 1  interrupt when input capture event occurs and when overflow
   TCNT1 = 0;              // Timer/counter 1 reset to zero
 
   /////////////
@@ -51,13 +52,19 @@ void loop()
 
 ISR(TIMER1_CAPT_vect)
 {
+  uint32_t timerval = (timer1_msb << 16) | ICR1;
+  timer1_msb = 0;
   TCNT1 = 0;
   TCNT3 = 0;
-  update_outputs();
   degrees = 0;
-  degree = (uint32_t)ICR1 * 256 / 3600;
-  pad_decimal = 3600 / (((uint32_t)ICR1 * 256) % 3600);
+  degree = timerval / 3600;
+  pad_decimal = 3600 / (timerval % 3600);
   OCR3A = degree;
+  update_outputs();
+}
+
+ISR(TIMER1_OVF_vect) {
+  timer1_msb++;
 }
 
 ISR(TIMER3_COMPA_vect)
