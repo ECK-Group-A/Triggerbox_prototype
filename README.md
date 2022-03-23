@@ -14,8 +14,13 @@ We currently have a prototype of the trigger box working on an Arduino Leonardo,
 
 A second version is currently under development. This is using a STM32 Blue Pill microcontroller. We have decided to use this microcontroller because of the higher clock speed and larger counter/timers. This allows us more precision in the timing of the trigger box.
 
-## future
+## Future
 
 Other possible optimized components are also under consideration.
 
 The functionality of the trigger box will be described. This will be available in future commits to this repository, and our final report.
+
+
+## Use of the trigger box
+
+The trigger box requires a 1Hz 5V pulse signal on the D4 pin of the arduino. It will multiply this signal by 10, to create multiple 10Hz 5V siganls on poort F of the ATmega32u4, wich are pin A5 through A0. A phase offset can be configured with a 1 degree resulution, by edeting the camera_position array in the src/main.cpp file.
